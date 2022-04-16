@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+        #settings{
+            max-width: 300px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        #settings .text{
+            box-sizing: border-box;
+            width: 100%;
+            font-size: 20px;
+        }
+    </style>
+
+    <div id="window">
+        <div id="settings">
+            <input type="number" placeholder="Кол-во элементов" id="count-slices" class="text" value="100">
+            <button class="text" id="button-start">Начать</button>
+        </div>
+    
+        <canvas width="1280" height="720" id="cnv"></canvas>
+    </div>
+
+    <script>
+        let cnv = document.getElementById("cnv")
+        let ctx = cnv.getContext("2d")
+
+        let buttonStart = document.getElementById("button-start")
+        let countSlices = document.getElementById("count-slices")
+
+        let count = 50
+        let arr = getRandomArray(count)
+        let sizeWindowSlices = 1280 / count
+        let sizeImgSlices = (sizeWindowSlices * 3480) / 1280
+
+        function getRandomArbitrary(min, max) {
+            return Math.random() * (max - min) + min | 0;
+        }
+
+        function getRandomArray(length){
+            let arr = Array.from(Array(length).keys())
+
+            for(let i = 0; i < arr.length; i++){
+                let a = getRandomArbitrary(0, arr.length)
+                let b = getRandomArbitrary(0, arr.length)
+
+                let tmp = arr[a]
+                arr[a] = arr[b]
+                arr[b] = tmp
+            }
+
+            return arr
+        }
+
+        window.onload = () => {
+
+            function init(){
+                for(let i = 0; i < arr.length; i++){
+                    ctx.drawImage(
+                        img,
+                        (sizeWindowSlices * i * img.width) / 1280, 0,
+                        sizeImgSlices, img.height,
+                        sizeWindowSlices * arr[i], 0,
+                        (sizeImgSlices * 1280) / img.width, 720
+                    )
+                }
+            }
+
+            let img = new Image()
+            img.src = "trollface.jpg"
+
+            img.onload = () => {
+                countSlices.oninput = () => {
+                    if(parseInt(countSlices.value)){
+                        count = parseInt(countSlices.value)
+                        arr = getRandomArray(count)
+                        sizeWindowSlices = 1280 / count
+                        sizeImgSlices = (sizeWindowSlices * img.width) / 1280
+                        init()
+                    }
+                }
+                buttonStart.onclick = () => {
+                    let i = 0
+                    let j = 0
+
+                    let timer = setInterval(() => {
+                        if(j > arr.length - i - 1){
+                            j = 0
+                            i += 1
+                        }
+
+                        if(i > arr.length - 1){
+                            clearInterval(timer)
+                        }
+
+                        if(arr[j] > arr[j + 1]){
+                            let tmp = arr[j]
+                            arr[j] = arr[j + 1]
+                            arr[j + 1] = tmp
+
+                            for(let n = 0; n < 2; n++)
+                                ctx.drawImage(img,
+                                    (sizeWindowSlices * (j + n) * img.width) / 1280, 0, 
+                                    sizeImgSlices, img.height, 
+                                    sizeWindowSlices * arr[j + n], 0, 
+                                    (sizeImgSlices * 1280) / img.width, 720
+                                )
+                            
+                        }
+
+                        j += 1
+
+                    }, 0)
+                }
+
+                init()
+
+            }
+        }
+    </script>
+</body>
+</html>
